@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="turtlebot3_nmpc" type="nmpc_filter_node.py" name="nmpc_filter" output="screen">
+    <param name="state_topic" value="amcl_pose"/>
+    <param name="cmd_in_topic" value="cmd_vel"/>
+    <param name="cmd_out_topic" value="cmd_vel_filtered"/>
+    <param name="path_topic" value="waypoints"/>
+    <param name="horizon" value="10"/>
+    <param name="dt" value="0.1"/>
+    <param name="v_max" value="0.22"/>
+    <param name="w_max" value="2.84"/>
+  </node>
+</launch>
