@@ -1,0 +1,40 @@
+<launch>
+  <!-- 기본 인자 -->
+  <arg name="frame_id" default="map"/>
+  <arg name="odom_topic" default="/odom"/>
+  <arg name="imu_topic"  default="/imu/data"/>
+
+  <!-- 필터링 입출력 -->
+  <arg name="scan_in"   default="/scan"/>
+  <arg name="scan_out"  default="/scan_filtered"/>
+
+  <!-- ===== UKF(스캔 필터 포함) ===== -->
+  <node pkg="turtlebot3_ukf" type="ukf_node.py" name="ukf_node" output="screen">
+    <param name="frame_id" value="$(arg frame_id)"/>
+    <param name="scan_in"  value="$(arg scan_in)"/>
+    <param name="scan_out" value="$(arg scan_out)"/>
+
+    <!-- (필요시) 필터 강도 조정 -->
+    <param name="scan_min_range" value="0.12"/>
+    <param name="scan_max_range" value="3.5"/>
+    <param name="scan_downsample" value="2"/>
+    <param name="scan_ma_win"     value="3"/>
+
+    <!-- UKF 파라미터는 필요 시 추가 -->
+    <remap from="/odom"      to="$(arg odom_topic)"/>
+    <remap from="/imu/data"  to="$(arg imu_topic)"/>
+  </node>
+
+  <!-- ===== turtlebot3 diagnostics (스캔을 필터 결과로) ===== -->
+  <!-- 보통 bringup에서 올라가므로, 이 런치에서는 직접 올리는 버전 예시를 제공합니다.
+       이미 다른 런치로 올라가 있다면, 해당 런치에서 동일하게 remap 하세요. -->
+  <node pkg="turtlebot3_bringup" type="turtlebot3_diagnostics" name="turtlebot3_diagnostics" output="screen">
+    <remap from="/scan" to="$(arg scan_out)"/>
+    <remap from="/imu"  to="$(arg imu_topic)"/>  <!-- 환경에 맞게 조정 -->
+  </node>
+
+  <!-- ===== gmapping (스캔을 필터 결과로) ===== -->
+  <node pkg="turtlebot3_slam" type="turtlebot3_slam_gmapping" name="turtlebot3_slam_gmapping" output="screen">
+    <remap from="/scan" to="$(arg scan_out)"/>
+  </node>
+</launch>
